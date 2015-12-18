@@ -2,24 +2,27 @@ package com.romansl.backgroundloadmanager
 
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
-import android.view.View
 import android.view.Menu
 import android.view.MenuItem
+import kotlin.properties.Delegates
 
 class MainActivity : AppCompatActivity() {
-    private val loadManager = LoadManager()
-    private val myTask = loadManager.register(MyTask::class.java) {
-        // complete
-    }
+    private var loadManager: LoadManager by Delegates.notNull()
+    private var myTask: TaskFuture<String> by Delegates.notNull()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val toolbar = findViewById(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
+
+        loadManager = LoadManager.create(savedInstanceState)
+
+        myTask = loadManager.register(MyTask::class.java) {
+            // complete
+        }
 
         val fab = findViewById(R.id.fab) as FloatingActionButton
         fab.setOnClickListener { view ->
@@ -57,9 +60,20 @@ class MainActivity : AppCompatActivity() {
         loadManager.onStop()
     }
 
-    class MyTask : Task<String> {
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        loadManager.onSave(outState)
+    }
+
+    class Fff : Task<String> {
         override fun run(args: String) {
 
+        }
+    }
+
+    data class MyTask(val arg1: Int, val b: Fff) : Task<String> by b {
+        override fun run(args: String) {
+            b.run(args)
         }
     }
 }
